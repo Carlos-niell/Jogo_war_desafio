@@ -67,3 +67,86 @@ int main() {
     
     return 0;
 }
+// -----------------------------
+// Sistema simples de empréstimo
+// -----------------------------
+typedef struct {
+    int id;
+    char titulo[100];
+    int disponivel;       // 1 = disponível, 0 = emprestado
+    int emprestado_por;   // id do jogador/usuário que pegou emprestado, -1 se disponível
+} Livro;
+
+/* Inicializa uma pequena coleção de livros */
+void inicializar_biblioteca(Livro *livros, int *num_livros) {
+    *num_livros = 5;
+    for (int i = 0; i < *num_livros; ++i) {
+        livros[i].id = i + 1;
+        livros[i].disponivel = 1;
+        livros[i].emprestado_por = -1;
+    }
+    strncpy(livros[0].titulo, "Estruturas de Dados em C", sizeof(livros[0].titulo));
+    strncpy(livros[1].titulo, "Algoritmos e Complexidade", sizeof(livros[1].titulo));
+    strncpy(livros[2].titulo, "Programacao de Sistemas", sizeof(livros[2].titulo));
+    strncpy(livros[3].titulo, "Redes de Computadores", sizeof(livros[3].titulo));
+    strncpy(livros[4].titulo, "Engenharia de Software", sizeof(livros[4].titulo));
+}
+
+/* Imprime o estado atual dos livros (apenas leitura) */
+void imprimir_status_livros(const Livro *livros, int num_livros) {
+    printf("Biblioteca - Status dos livros:\n");
+    for (int i = 0; i < num_livros; ++i) {
+        printf("  [%d] %s - %s", livros[i].id, livros[i].titulo,
+               livros[i].disponivel ? "DISPONIVEL" : "EMPRESTADO");
+        if (!livros[i].disponivel) {
+            printf(" (emprestado por id %d)", livros[i].emprestado_por);
+        }
+        printf("\n");
+    }
+}
+
+/*
+  Tenta emprestar um livro.
+  Retornos:
+    1  = sucesso (emprestado)
+    0  = livro não disponível
+   -1  = livro não encontrado
+*/
+int emprestar_livro(Livro *livros, int num_livros, int livro_id, int patron_id) {
+    for (int i = 0; i < num_livros; ++i) {
+        if (livros[i].id == livro_id) {
+            if (!livros[i].disponivel) {
+                return 0; // não disponível
+            }
+            livros[i].disponivel = 0;
+            livros[i].emprestado_por = patron_id;
+            return 1; // sucesso
+        }
+    }
+    return -1; // não encontrado
+}
+
+/*
+  Devolve um livro.
+  Retornos:
+    1  = sucesso (devolvido)
+    0  = livro já estava disponível / não emprestado
+   -1  = livro não encontrado
+*/
+int devolver_livro(Livro *livros, int num_livros, int livro_id, int patron_id) {
+    for (int i = 0; i < num_livros; ++i) {
+        if (livros[i].id == livro_id) {
+            if (livros[i].disponivel) {
+                return 0; // já disponível
+            }
+            // opcional: verificar se quem devolve é quem pegou emprestado
+            if (livros[i].emprestado_por != patron_id) {
+                // ainda assim permite a devolução, mas poderia bloquear
+            }
+            livros[i].disponivel = 1;
+            livros[i].emprestado_por = -1;
+            return 1; // sucesso
+        }
+    }
+    return -1; // não encontrado
+}
